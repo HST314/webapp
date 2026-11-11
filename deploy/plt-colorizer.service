@@ -1,0 +1,24 @@
+[Unit]
+Description=PLT Colorizer (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=plt
+Group=plt
+WorkingDirectory=/opt/plt-colorizer
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/plt-colorizer/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --limit-concurrency 2 --timeout-keep-alive 5
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

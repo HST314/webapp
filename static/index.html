@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>裁片填色 · PLT 转 PNG</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead-title">
+        <h1>裁片填色</h1>
+        <p class="masthead-sub">PLT 线框 → 分色 PNG</p>
+      </div>
+      <p class="lede">上传 PLT 图纸，按参数拆片、分色，导出 PNG 压缩包。页面上的默认值与原脚本完全一致。</p>
+    </header>
+
+    <form id="form" autocomplete="off">
+      <main class="workbench">
+        <section class="sheet upload-sheet" aria-labelledby="file-heading">
+          <h2 id="file-heading">图纸</h2>
+          <label class="drop" id="drop">
+            <input class="sr-only" id="file" type="file" accept=".plt">
+            <svg class="drop-art" viewBox="0 0 160 110" aria-hidden="true" focusable="false">
+              <path d="M26 100 L22 34 C22 24 28 16 38 12 L52 8 C58 22 68 30 80 30 C92 30 102 22 108 8 L122 12 C132 16 138 24 138 34 L134 100 Z"
+                    fill="none" stroke="currentColor" stroke-width="1.2"
+                    stroke-dasharray="5 4" stroke-linejoin="round"/>
+            </svg>
+            <span class="drop-title" id="file-name">拖入 PLT 文件，或点此选择</span>
+            <span class="drop-hint">单文件，不超过 20 MB</span>
+            <span class="drop-meta" id="file-meta" hidden></span>
+          </label>
+        </section>
+
+        <section class="sheet settings-sheet" aria-labelledby="settings-heading">
+          <h2 id="settings-heading">导出参数</h2>
+
+          <div class="field">
+            <label for="scale">单位换算</label>
+            <div class="control">
+              <input id="scale" type="number" step="any" min="0.0001" max="10" value="0.025" inputmode="decimal">
+              <span class="unit">mm / 单位</span>
+            </div>
+            <p class="field-hint">PLT 绘图单位换算成毫米。默认 0.025。</p>
+          </div>
+
+          <div class="field">
+            <label for="dpi">输出分辨率</label>
+            <div class="control">
+              <input id="dpi" type="number" step="1" min="36" max="2400" value="300" inputmode="numeric">
+              <span class="unit">DPI</span>
+            </div>
+            <p class="field-hint">默认 300，与原脚本一致。</p>
+          </div>
+
+          <div class="field">
+            <label for="min-area">主裁片阈值</label>
+            <div class="control">
+              <input id="min-area" type="number" step="10" min="0" max="1000000000" value="500" inputmode="numeric">
+              <span class="unit">mm²</span>
+            </div>
+            <p class="field-hint">面积大于此值的轮廓视为一件主裁片。默认 500。</p>
+          </div>
+
+          <div class="field">
+            <label for="min-piece-area">碎块过滤</label>
+            <div class="control">
+              <input id="min-piece-area" type="number" step="10" min="0" max="1000000000" value="200" inputmode="numeric">
+              <span class="unit">mm²</span>
+            </div>
+            <p class="field-hint">小于此值的面片不导出。默认 200。</p>
+          </div>
+
+          <div class="field">
+            <label for="prefix">文件名前缀</label>
+            <div class="control">
+              <input id="prefix" type="text" maxlength="60" placeholder="自动取 PLT 文件名">
+            </div>
+            <p class="field-hint">留空则沿用图纸文件名。导出格式：前缀_序号_宽X高.png</p>
+          </div>
+
+          <details class="advanced">
+            <summary>高级参数</summary>
+            <div class="field">
+              <label for="close-tol">闭环容差</label>
+              <div class="control">
+                <input id="close-tol" type="number" step="0.1" min="0" max="100" value="2" inputmode="decimal">
+                <span class="unit">mm</span>
+              </div>
+              <p class="field-hint">首尾点距离小于此值即判定为闭合轮廓。默认 2。</p>
+            </div>
+          </details>
+
+          <div class="palette">
+            <div class="palette-head">
+              <h3>色板</h3>
+              <div class="palette-tools">
+                <button class="quiet" id="add-color" type="button">加一色</button>
+                <button class="quiet" id="reset-colors" type="button">恢复默认</button>
+              </div>
+            </div>
+            <div class="swatches" id="swatches"></div>
+            <p class="field-hint">共 <span id="color-count">5</span> 个颜色，按面积顺序循环使用。</p>
+          </div>
+
+          <button class="quiet reset-all" id="reset-params" type="button">恢复全部默认参数</button>
+        </section>
+      </main>
+
+      <section class="run-strip">
+        <button class="primary" id="submit" type="submit">开始填色并打包</button>
+        <p class="action-note">处理在本机完成，图纸不会上传到其他服务。</p>
+      </section>
+
+      <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+
+      <div class="result" id="result" hidden>
+        <div>
+          <p class="result-line"><strong class="result-count" id="result-count">0</strong> 张 PNG 已打包</p>
+          <p class="result-name" id="result-name"></p>
+        </div>
+        <a class="download" id="download" href="#" download>下载 ZIP</a>
+      </div>
+    </form>
+
+    <footer class="colophon">
+      <p>色块按面积从大到小循环取色。要固定罗纹、门襟等部件的颜色，调整色板顺序即可。</p>
+      <p>输出保留纯色像素（关闭抗锯齿），可直接用于打印与后续排版。</p>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
