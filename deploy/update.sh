@@ -9,6 +9,9 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
+# 仓库必须归运行用户所有，否则 git 会因 .git/index 权限拒绝
+chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+
 sudo -H -u "$APP_USER" git -C "$APP_DIR" pull --ff-only
 
 if [[ -n "${PIP_INDEX_URL:-}" ]]; then
