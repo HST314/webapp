@@ -5,7 +5,7 @@
     scale: 0.025,
     dpi: 300,
     minArea: 500,
-    minPieceArea: 200,
+    minPieceAreaCm2: 0.5,
     closeTol: 2,
     colors: ["#CCCCFF", "#FF9933", "#00CCFF", "#99CCCC", "#CCFFCC"],
   };
@@ -26,7 +26,6 @@
   const closeTolInput = document.getElementById("close-tol");
   const prefixInput = document.getElementById("prefix");
   const swatches = document.getElementById("swatches");
-  const colorCount = document.getElementById("color-count");
   const addColorButton = document.getElementById("add-color");
   const resetColorsButton = document.getElementById("reset-colors");
   const resetParamsButton = document.getElementById("reset-params");
@@ -92,7 +91,6 @@
 
   function renderPalette() {
     swatches.innerHTML = "";
-    colorCount.textContent = String(state.colors.length);
     addColorButton.disabled = state.colors.length >= MAX_COLORS;
 
     state.colors.forEach((color, index) => {
@@ -168,7 +166,7 @@
     scaleInput.value = String(DEFAULTS.scale);
     dpiInput.value = String(DEFAULTS.dpi);
     minAreaInput.value = String(DEFAULTS.minArea);
-    minPieceAreaInput.value = String(DEFAULTS.minPieceArea);
+    minPieceAreaInput.value = String(DEFAULTS.minPieceAreaCm2);
     closeTolInput.value = String(DEFAULTS.closeTol);
     state.prefixTouched = false;
     prefixInput.value = state.file ? stem(state.file.name) : "";
@@ -267,15 +265,15 @@
     const scale = Number(scaleInput.value);
     const dpi = Number(dpiInput.value);
     const minArea = Number(minAreaInput.value);
-    const minPieceArea = Number(minPieceAreaInput.value);
+    const minPieceAreaCm2 = Number(minPieceAreaInput.value);
     const closeTol = Number(closeTolInput.value);
 
-    if (![scale, dpi, minArea, minPieceArea, closeTol].every(Number.isFinite)) {
-      setStatus("参数里出现了无效数字，请检查。", "error");
+    if (![scale, dpi, minArea, minPieceAreaCm2, closeTol].every(Number.isFinite)) {
+      setStatus("参数无效，请检查输入。", "error");
       return;
     }
-    if (scale <= 0 || dpi < 36 || dpi > 2400 || minArea < 0 || minPieceArea < 0 || closeTol < 0) {
-      setStatus("参数超出允许范围：换算比例须大于 0，DPI 为 36–2400，其余阈值不小于 0。", "error");
+    if (scale <= 0 || dpi < 36 || dpi > 2400 || minArea < 0 || minPieceAreaCm2 < 0 || closeTol < 0) {
+      setStatus("参数无效，请检查输入。", "error");
       return;
     }
 
@@ -284,7 +282,8 @@
     formData.append("scale", String(scale));
     formData.append("dpi", String(Math.round(dpi)));
     formData.append("min_area", String(minArea));
-    formData.append("min_piece_area", String(minPieceArea));
+    // 页面用 cm²，接口用 mm²
+    formData.append("min_piece_area", String(minPieceAreaCm2 * 100));
     formData.append("close_tol", String(closeTol));
     formData.append("colors", JSON.stringify(state.colors));
     formData.append("prefix", prefixInput.value.trim());

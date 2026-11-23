@@ -155,7 +155,7 @@ def convert(
     scale: float = Form(0.025),
     dpi: int = Form(300),
     min_area: float = Form(500.0),
-    min_piece_area: float = Form(200.0),
+    min_piece_area: float = Form(50.0),
     close_tol: float = Form(2.0),
     colors: str = Form(json.dumps(DEFAULT_COLORS)),
     prefix: str = Form(""),
@@ -174,7 +174,7 @@ def convert(
     _validate_range(scale, "换算比例", 0.0001, 10.0)
     _validate_range(float(dpi), "DPI", 36, 2400)
     _validate_range(min_area, "主裁片阈值", 0.0, 1e9)
-    _validate_range(min_piece_area, "碎块过滤阈值", 0.0, 1e9)
+    _validate_range(min_piece_area, "碎片过滤阈值", 0.0, 1e9)
     _validate_range(close_tol, "闭环容差", 0.0, 100.0)
 
     palette = _parse_colors(colors)

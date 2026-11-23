@@ -13,7 +13,7 @@
         <h1>裁片填色</h1>
         <p class="masthead-sub">PLT 线框 → 分色 PNG</p>
       </div>
-      <p class="lede">上传 PLT 图纸，按参数拆片、分色，导出 PNG 压缩包。页面上的默认值与原脚本完全一致。</p>
+      <p class="lede">上传 PLT 图纸，拆片、分色，导出 PNG 压缩包。</p>
     </header>
 
     <form id="form" autocomplete="off">
@@ -36,40 +36,17 @@
         <section class="sheet settings-sheet" aria-labelledby="settings-heading">
           <h2 id="settings-heading">导出参数</h2>
 
-          <div class="field">
-            <label for="scale">单位换算</label>
-            <div class="control">
-              <input id="scale" type="number" step="any" min="0.0001" max="10" value="0.025" inputmode="decimal">
-              <span class="unit">mm / 单位</span>
-            </div>
-            <p class="field-hint">PLT 绘图单位换算成毫米。默认 0.025。</p>
-          </div>
+          <input type="hidden" id="scale" value="0.025">
+          <input type="hidden" id="dpi" value="300">
+          <input type="hidden" id="min-area" value="500">
 
           <div class="field">
-            <label for="dpi">输出分辨率</label>
+            <label for="min-piece-area">碎片过滤</label>
             <div class="control">
-              <input id="dpi" type="number" step="1" min="36" max="2400" value="300" inputmode="numeric">
-              <span class="unit">DPI</span>
+              <input id="min-piece-area" type="number" step="0.1" min="0" value="0.5" inputmode="decimal">
+              <span class="unit">cm²</span>
             </div>
-            <p class="field-hint">默认 300，与原脚本一致。</p>
-          </div>
-
-          <div class="field">
-            <label for="min-area">主裁片阈值</label>
-            <div class="control">
-              <input id="min-area" type="number" step="10" min="0" max="1000000000" value="500" inputmode="numeric">
-              <span class="unit">mm²</span>
-            </div>
-            <p class="field-hint">面积大于此值的轮廓视为一件主裁片。默认 500。</p>
-          </div>
-
-          <div class="field">
-            <label for="min-piece-area">碎块过滤</label>
-            <div class="control">
-              <input id="min-piece-area" type="number" step="10" min="0" max="1000000000" value="200" inputmode="numeric">
-              <span class="unit">mm²</span>
-            </div>
-            <p class="field-hint">小于此值的面片不导出。默认 200。</p>
+            <p class="field-hint">小于该面积的碎片不导出。</p>
           </div>
 
           <div class="field">
@@ -77,7 +54,7 @@
             <div class="control">
               <input id="prefix" type="text" maxlength="60" placeholder="自动取 PLT 文件名">
             </div>
-            <p class="field-hint">留空则沿用图纸文件名。导出格式：前缀_序号_宽X高.png</p>
+            <p class="field-hint">留空则沿用图纸文件名。</p>
           </div>
 
           <details class="advanced">
@@ -88,7 +65,7 @@
                 <input id="close-tol" type="number" step="0.1" min="0" max="100" value="2" inputmode="decimal">
                 <span class="unit">mm</span>
               </div>
-              <p class="field-hint">首尾点距离小于此值即判定为闭合轮廓。默认 2。</p>
+              <p class="field-hint">首尾点距离小于此值即判定为闭合。</p>
             </div>
           </details>
 
@@ -101,7 +78,7 @@
               </div>
             </div>
             <div class="swatches" id="swatches"></div>
-            <p class="field-hint">共 <span id="color-count">5</span> 个颜色，按面积顺序循环使用。</p>
+            <p class="field-hint">按面积从大到小循环使用。</p>
           </div>
 
           <button class="quiet reset-all" id="reset-params" type="button">恢复全部默认参数</button>
@@ -125,8 +102,8 @@
     </form>
 
     <footer class="colophon">
-      <p>色块按面积从大到小循环取色。要固定罗纹、门襟等部件的颜色，调整色板顺序即可。</p>
-      <p>输出保留纯色像素（关闭抗锯齿），可直接用于打印与后续排版。</p>
+      <p>色块按面积循环取色；调整色板顺序可改变部件颜色。</p>
+      <p>输出为纯色 PNG，可直接用于打印。</p>
     </footer>
   </div>
 
